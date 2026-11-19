@@ -1,0 +1,53 @@
+name: Update earnings
+
+on:
+  schedule:
+    # 台灣時間 07:23 / 12:23 / 21:23（美股盤後、盤前財報後各抓一次）
+    - cron: "23 23 * * 0-5"
+    - cron: "23 4 * * 1-5"
+    - cron: "23 13 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      add:
+        description: "新增公司：交易所:代號|英文名|中文名（多筆用 ; 分隔），例 NASDAQ:AVGO|Broadcom|博通"
+        required: false
+        default: ""
+      remove:
+        description: "刪除公司代號（多筆用 , 分隔），例 INTC,QCOM"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-earnings
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install openpyxl
+      - name: Add / remove companies
+        if: ${{ github.event_name == 'workflow_dispatch' && (inputs.add != '' || inputs.remove != '') }}
+        env:
+          ADD: ${{ inputs.add }}
+          REMOVE: ${{ inputs.remove }}
+        run: python scripts/manage.py --add "$ADD" --remove "$REMOVE"
+      - name: Fetch TradingView
+        run: python scripts/fetch.py
+      - name: Export CSV / XLSX
+        run: python scripts/export.py
+      - name: Commit
+        run: |
+          git config user.name "earnings-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A config public/data
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "data: update $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push

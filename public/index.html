@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>美股科技巨頭財報追蹤</title>
+<meta name="description" content="美股科技 / AI 巨頭每季財報：EPS 與營收預測 vs 實際、驚喜幅度、長期趨勢，可匯出 CSV / Excel">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23f5a623'/><path d='M7 22l6-7 5 4 7-9' stroke='%23111' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.js"></script>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2a3340;--txt:#e6edf3;--mute:#8b98a9;--acc:#f5a623;--up:#ff4d5e;--dn:#22c55e;--upbg:rgba(255,77,94,.14);--dnbg:rgba(34,197,94,.14);--shadow:0 1px 0 rgba(255,255,255,.03)}
+[data-theme=light]{--bg:#f4f6f9;--panel:#fff;--panel2:#f7f8fa;--line:#dfe3ea;--txt:#18202b;--mute:#5d6b7c;--acc:#d98a00;--up:#d7263d;--dn:#138a3e;--upbg:rgba(215,38,61,.09);--dnbg:rgba(19,138,62,.09)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 -apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.wrap{max-width:1320px;margin:0 auto;padding:0 16px}
+.top{display:flex;align-items:center;gap:12px;padding:12px 0 8px;flex-wrap:wrap}
+.logo{width:30px;height:30px;border-radius:8px;background:var(--acc);display:grid;place-items:center;color:#111;font-weight:800}
+h1{font-size:18px;margin:0;letter-spacing:.5px}
+.sub{color:var(--mute);font-size:12px}
+.sp{flex:1}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--txt);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+nav button{background:none;border:0;color:var(--mute);padding:10px 14px;font-size:14px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--txt);border-bottom-color:var(--acc);font-weight:600}
+main{padding:18px 0 40px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pills{display:flex;gap:6px;flex-wrap:wrap}
+.pill{padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:13px;color:var(--txt)}
+.pill.on{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}
+select,input[type=text]{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0 4px}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .l{color:var(--mute);font-size:12px}.kpi .v{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{background:var(--panel2);color:var(--mute);font-weight:600;font-size:12px;position:sticky;top:0;cursor:pointer;user-select:none;text-align:right}
+th.l,td.l{text-align:left}td{text-align:right}
+th.sorted{color:var(--acc)}
+tbody tr:hover{background:var(--panel2)}
+td.nm{font-weight:600}td.nm small{color:var(--mute);font-weight:400;margin-left:4px}
+.up{color:var(--up);font-weight:600}.dn{color:var(--dn);font-weight:600}
+.badge{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:600}
+.b-up{background:var(--upbg);color:var(--up)}.b-dn{background:var(--dnbg);color:var(--dn)}.b-pd{background:var(--panel2);color:var(--mute);border:1px solid var(--line)}
+.tag{font-size:11px;color:var(--mute);border:1px solid var(--line);border-radius:5px;padding:0 5px;margin-left:3px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.chartbox{position:relative;height:330px}
+h2{font-size:15px;margin:0 0 10px}
+.note{color:var(--mute);font-size:12px;line-height:1.7}
+.hm td{text-align:center;min-width:64px;font-size:12px}
+.hm td.l{text-align:left;min-width:120px}
+code{background:var(--panel2);border:1px solid var(--line);padding:1px 6px;border-radius:5px;font-size:12px}
+.hide{display:none!important}
+footer{border-top:1px solid var(--line);padding:16px 0 30px;color:var(--mute);font-size:12px}
+.chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+@media(max-width:600px){h1{font-size:16px}.kpi .v{font-size:18px}th,td{padding:7px 8px}.top .sub{width:100%}}
+</style>
+</head>
+<body>
+<header>
+ <div class="wrap">
+  <div class="top">
+   <div class="logo">E</div>
+   <div><h1>美股科技巨頭財報追蹤</h1><div class="sub" id="upd">載入中…</div></div>
+   <div class="sp"></div>
+   <button class="btn" id="csvBtn" title="匯出目前畫面資料">⬇ CSV</button>
+   <a class="btn pri" href="data/exports/earnings.xlsx" download>⬇ Excel 全部</a>
+   <button class="btn" id="themeBtn" title="切換深淺色">🌓</button>
+  </div>
+  <nav id="tabs">
+   <button data-t="q" class="on">季度財報</button>
+   <button data-t="trend">個股長期趨勢</button>
+   <button data-t="cmp">多公司比較</button>
+   <button data-t="cal">即將公布</button>
+   <button data-t="list">追蹤名單</button>
+  </nav>
+ </div>
+</header>
+
+<main class="wrap">
+ <!-- 季度財報 -->
+ <section id="t-q">
+  <div class="panel">
+   <div class="row"><b>財報季</b><div class="pills" id="qPills"></div></div>
+   <div class="kpis" id="qKpi"></div>
+  </div>
+  <div class="panel">
+   <h2 id="qTitle"></h2>
+   <div class="tw"><table id="qTable"></table></div>
+   <p class="note">B = 十億美元。EPS 預測／已發布為 TradingView 調整後 EPS（與市場共識比較口徑）。財報季以「公布日 − 60 天」所在日曆季歸類，例如 NVDA 8 月底、MU 6 月底公布者皆歸 Q2。市值為該季首次收錄時之數值。</p>
+  </div>
+ </section>
+
+ <!-- 個股趨勢 -->
+ <section id="t-trend" class="hide">
+  <div class="panel row">
+   <b>公司</b><select id="coSel"></select>
+   <b>區間</b><div class="pills" id="rangePills"></div>
+  </div>
+  <div class="grid2">
+   <div class="panel"><h2>營收（B）與 GAAP EPS</h2><div class="chartbox"><canvas id="c1"></canvas></div></div>
+   <div class="panel"><h2>營收 YoY% 與 毛利率 / 淨利率</h2><div class="chartbox"><canvas id="c2"></canvas></div></div>
+  </div>
+  <div class="panel"><h2>EPS / 營收 驚喜幅度（實際 vs 預測）</h2><div class="chartbox" style="height:260px"><canvas id="c3"></canvas></div>
+   <p class="note">驚喜資料自本系統開始收錄（2026Q2 起）逐季累積；營收、GAAP EPS、毛利率等財報歷史可回溯約 8 年。</p></div>
+  <div class="panel"><h2 id="coTitle">歷史明細</h2><div class="tw"><table id="coTable"></table></div></div>
+ </section>
+
+ <!-- 多公司比較 -->
+ <section id="t-cmp" class="hide">
+  <div class="panel row">
+   <b>指標</b><select id="mSel"></select>
+   <b>區間</b><div class="pills" id="rangePills2"></div>
+  </div>
+  <div class="panel"><h2 id="hmTitle">熱力圖</h2><div class="tw"><table class="hm" id="hm"></table></div></div>
+  <div class="panel"><h2>走勢比較 <span class="note">（點圖例可隱藏/顯示公司）</span></h2><div class="chartbox" style="height:380px"><canvas id="c4"></canvas></div></div>
+ </section>
+
+ <!-- 即將公布 -->
+ <section id="t-cal" class="hide">
+  <div class="panel"><h2>即將公布財報</h2><div class="tw"><table id="calTable"></table></div>
+  <p class="note">日期與預測值來自 TradingView，公司可能調整日期，以公司公告為準。</p></div>
+ </section>
+
+ <!-- 追蹤名單 -->
+ <section id="t-list" class="hide">
+  <div class="panel">
+   <h2>追蹤名單 <span class="note">（勾選＝在本瀏覽器顯示；取消勾選只會在你的畫面隱藏）</span></h2>
+   <div class="tw"><table id="listTable"></table></div>
+  </div>
+  <div class="panel">
+   <h2>新增 / 刪除追蹤公司（永久）</h2>
+   <div class="note">
+    方式一：GitHub → <a id="actLink" target="_blank" rel="noopener">Actions → Update earnings</a> → <b>Run workflow</b>，填入：<br>
+    • <b>add</b>：<code>交易所:代號|英文名|中文名</code>，多筆以 <code>;</code> 分隔，例 <code>NASDAQ:AVGO|Broadcom|博通;NYSE:TSM|TSMC ADR|台積電ADR</code><br>
+    • <b>remove</b>：代號，多筆以 <code>,</code> 分隔，例 <code>INTC,QCOM</code><br>
+    方式二：直接編輯 <a id="cfgLink" target="_blank" rel="noopener"><code>config/companies.json</code></a> 並 commit，下一次排程會自動抓取。<br>
+    刪除的公司歷史資料會保留（標記為停用），日後重新加入可延續趨勢。代號需為 TradingView 格式，可在 TradingView 個股頁網址看到（例 <code>NASDAQ-AVGO</code> → <code>NASDAQ:AVGO</code>）。
+   </div>
+   <div class="row" style="margin-top:12px">
+    <input type="text" id="addSym" placeholder="NASDAQ:AVGO|Broadcom|博通" style="min-width:280px">
+    <button class="btn pri" id="addBtn">產生新增連結</button>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer><div class="wrap">
+ 下載：<a href="data/exports/earnings.xlsx" download>Excel（多工作表）</a>・<a href="data/exports/earnings_all.csv" download>CSV 全部歷史</a>・<a href="data/earnings.json" target="_blank">JSON</a><br>
+ 資料來源：TradingView（非官方端點，每日自動更新 3 次）。紅色＝優於預期 / 成長，綠色＝低於預期 / 衰退（台股慣例）。<br>
+ ⚠️ 免責聲明：本網站資料僅供研究參考，不構成任何投資建議；資料可能延遲或有誤，投資決策請以公司正式公告為準，風險自負。
+</div></footer>
+
+<script>
+const REPO="https://github.com/mywu-cloud/ustech";
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let DB=null, curTab="q", curQ=null, sortQ={k:"release_date",d:1}, range=LS.get("range",12), csvRows=()=>[];
+const charts={};
+const hidden=new Set(LS.get("hidden",[]));
+
+// ---------- utils ----------
+const qk=q=>(+q.slice(0,4))*4+(+q[5]);
+const isNum=v=>typeof v==="number"&&isFinite(v);
+const f=(v,d=2)=>isNum(v)?v.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}):"—";
+const pct=(v,d=2)=>isNum(v)?(v>0?"+":"")+f(v,d)+"%":"—";
+const cls=v=>isNum(v)?(v>0?"up":v<0?"dn":""):"";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const tvUrl=s=>`https://tw.tradingview.com/symbols/${s.replace(":","-")}/financials-earnings/`;
+const cos=(all=false)=>Object.values(DB.companies).filter(c=>(all||c.active!==false)&&(all||!hidden.has(c.ticker)));
+const PAL=["#f5a623","#4e9cff","#c678dd","#2ec4b6","#ff7a45","#e5c07b","#56b6c2","#ff6b9d","#98c379","#a0aec0","#e06c75","#61afef","#d19a66","#b48ead","#7ee787","#ffa657"];
+
+// ---------- load ----------
+fetch("data/earnings.json?"+Date.now()).then(r=>r.json()).then(d=>{DB=d;init()}).catch(e=>{$("#upd").textContent="資料載入失敗："+e});
+
+function init(){
+  const t=new Date(DB.updated_at);
+  $("#upd").textContent=`更新：${t.toLocaleString("zh-TW",{hour12:false})}（台灣時間）· 追蹤 ${cos(true).filter(c=>c.active!==false).length} 家`;
+  $("#actLink").href=REPO+"/actions/workflows/update.yml";$("#cfgLink").href=REPO+"/blob/main/config/companies.json";
+  const qs=allQuarters(); curQ=LS.get("q",null);
+  if(!qs.includes(curQ)) curQ=latestQ();
+  // range pills
+  for(const id of ["#rangePills","#rangePills2"]){
+    $(id).innerHTML=[[8,"2年"],[12,"3年"],[20,"5年"],[99,"全部"]].map(([n,l])=>`<span class="pill ${n==range?"on":""}" data-r="${n}">${l}</span>`).join("");
+    $(id).onclick=e=>{const n=e.target.dataset.r;if(!n)return;range=+n;LS.set("range",range);$$("[data-r]").forEach(p=>p.classList.toggle("on",p.dataset.r==n));render()};
+  }
+  $("#coSel").innerHTML=cos(true).filter(c=>c.active!==false).map(c=>`<option value="${c.ticker}">${c.ticker} ${c.name_zh||c.name}</option>`).join("");
+  $("#coSel").value=LS.get("co","NVDA"); if(!$("#coSel").value) $("#coSel").selectedIndex=0;
+  $("#coSel").onchange=()=>{LS.set("co",$("#coSel").value);render()};
+  const M=[["rev_yoy","營收 YoY%"],["revenue","營收（B）"],["eps_gaap","GAAP EPS"],["eps_gaap_yoy","GAAP EPS YoY%"],["gross_margin","毛利率%"],["net_margin","淨利率%"],["eps_surprise_pct","EPS 驚喜%"],["rev_surprise_pct","營收驚喜%"]];
+  $("#mSel").innerHTML=M.map(([k,l])=>`<option value="${k}">${l}</option>`).join(""); $("#mSel").value=LS.get("m","rev_yoy");
+  $("#mSel").onchange=()=>{LS.set("m",$("#mSel").value);render()};
+  $("#tabs").onclick=e=>{const t=e.target.dataset.t;if(!t)return;curTab=t;$$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));$$("main>section").forEach(s=>s.classList.toggle("hide",s.id!=="t-"+t));render()};
+  render();
+}
+function allQuarters(){const s=new Set();for(const c of cos())for(const [q,h] of Object.entries(c.history))if(isNum(h.eps_est))s.add(q);return [...s].sort((a,b)=>qk(b)-qk(a))}
+function latestQ(){const s=new Set();for(const c of cos())for(const [q,h] of Object.entries(c.history))if(isNum(h.eps_est)&&isNum(h.eps_act))s.add(q);return [...s].sort((a,b)=>qk(b)-qk(a))[0]}
+
+function render(){
+  if(!DB)return;
+  ({q:renderQ,trend:renderTrend,cmp:renderCmp,cal:renderCal,list:renderList})[curTab]();
+}
+
+// ---------- 季度財報 ----------
+function renderQ(){
+  const qs=allQuarters();
+  $("#qPills").innerHTML=qs.map(q=>`<span class="pill ${q===curQ?"on":""}" data-q="${q}">${q}${q===latestQ()?" ★":""}</span>`).join("");
+  $("#qPills").onclick=e=>{if(e.target.dataset.q){curQ=e.target.dataset.q;LS.set("q",curQ);renderQ()}};
+  const rows=cos().map(c=>({c,h:c.history[curQ]})).filter(x=>x.h).map(({c,h})=>({...h,ticker:c.ticker,name:c.name,name_zh:c.name_zh,symbol:c.symbol,tags:c.tags,rev:h.rev_act??h.revenue,pending:!isNum(h.eps_act)}));
+  const done=rows.filter(r=>!r.pending), beat=done.filter(r=>r.eps_surprise>0).length, rbeat=done.filter(r=>r.rev_surprise_pct>0).length;
+  const avg=done.length?done.reduce((s,r)=>s+(r.eps_surprise_pct||0),0)/done.length:null;
+  const med=(()=>{const a=done.map(r=>r.eps_surprise_pct).filter(isNum).sort((a,b)=>a-b);return a.length?a[Math.floor(a.length/2)]:null})();
+  const ryoy=done.map(r=>r.rev_yoy).filter(isNum);const avgYoy=ryoy.length?ryoy.reduce((a,b)=>a+b,0)/ryoy.length:null;
+  $("#qKpi").innerHTML=[
+    ["已公布",`${done.length} / ${rows.length}`,""],
+    ["EPS 優於預期",done.length?`${beat} 家（${Math.round(beat/done.length*100)}%）`:"—",""],
+    ["營收優於預期",done.length?`${rbeat} 家（${Math.round(rbeat/done.length*100)}%）`:"—",""],
+    ["EPS 驚喜中位數",pct(med),cls(med)],
+    ["平均營收 YoY",pct(avgYoy,1),cls(avgYoy)],
+  ].map(([l,v,c])=>`<div class="kpi"><div class="l">${l}</div><div class="v ${c}">${v}</div></div>`).join("");
+  $("#qTitle").textContent=`美股科技巨頭財報 ${curQ}　B＝十億美元`;
+  const cols=[
+    ["name","商品","l",r=>`<td class="l nm">${r.name}<small>${r.name_zh||""}</small></td>`],
+    ["ticker","代號","l",r=>`<td class="l"><a href="${tvUrl(r.symbol)}" target="_blank" rel="noopener"><b>${r.ticker}</b></a></td>`],
+    ["market_cap","市場總值","",r=>`<td>${isNum(r.market_cap)?f(r.market_cap,0)+" B":"—"}</td>`],
+    ["eps_est","EPS預測","",r=>`<td>${f(r.eps_est)}</td>`],
+    ["eps_act","已發布EPS","",r=>`<td class="${cls(r.eps_surprise)}">${r.pending?'<span class="badge b-pd">待公布</span>':f(r.eps_act)}</td>`],
+    ["eps_surprise","驚喜","",r=>`<td class="${cls(r.eps_surprise)}">${r.pending?"—":(r.eps_surprise>0?"+":"")+f(r.eps_surprise)}</td>`],
+    ["eps_surprise_pct","超出預期 %","",r=>`<td>${r.pending?"—":`<span class="badge ${r.eps_surprise_pct>0?"b-up":"b-dn"}">${pct(r.eps_surprise_pct)}</span>`}</td>`],
+    ["rev_est","預測營收 (B)","",r=>`<td>${f(r.rev_est)}</td>`],
+    ["rev","實際營收 (B)","",r=>`<td class="${cls(r.rev_surprise_pct)}">${r.pending?"—":f(r.rev)}</td>`],
+    ["rev_surprise_pct","營收驚喜 %","",r=>`<td class="${cls(r.rev_surprise_pct)}">${r.pending?"—":pct(r.rev_surprise_pct)}</td>`],
+    ["rev_yoy","營收 YoY","",r=>`<td class="${cls(r.rev_yoy)}">${pct(r.rev_yoy,1)}</td>`],
+    ["release_date","公布日期","",r=>`<td><b>${r.release_date||"—"}</b></td>`],
+  ];
+  rows.sort((a,b)=>{const x=a[sortQ.k],y=b[sortQ.k];if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*sortQ.d});
+  $("#qTable").innerHTML=`<thead><tr>${cols.map(([k,l,c])=>`<th class="${c} ${sortQ.k===k?"sorted":""}" data-k="${k}">${l}${sortQ.k===k?(sortQ.d>0?" ▲":" ▼"):""}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>c[3](r)).join("")}</tr>`).join("")}</tbody>`;
+  $("#qTable thead").onclick=e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;sortQ={k,d:sortQ.k===k?-sortQ.d:(k==="name"||k==="ticker"||k==="release_date"?1:-1)};renderQ()};
+  csvRows=()=>[cols.map(c=>c[1]),...rows.map(r=>[r.name+" "+(r.name_zh||""),r.ticker,r.market_cap,r.eps_est,r.pending?"":r.eps_act,r.pending?"":r.eps_surprise,r.pending?"":r.eps_surprise_pct,r.rev_est,r.pending?"":r.rev,r.pending?"":r.rev_surprise_pct,r.rev_yoy,r.release_date])];
+  csvName=`earnings_${curQ}.csv`;
+}
+
+// ---------- 個股趨勢 ----------
+function mk(id,cfg){charts[id]?.destroy();charts[id]=new Chart($("#"+id),cfg)}
+function baseOpt(extra={}){const g=css("--line"),t=css("--mute");return {responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{labels:{color:t,boxWidth:12}}},scales:{x:{ticks:{color:t},grid:{color:g}},y:{ticks:{color:t},grid:{color:g}},...extra}}}
+function renderTrend(){
+  const c=DB.companies[$("#coSel").value]; if(!c)return;
+  const H=Object.values(c.history).filter(h=>isNum(h.revenue)||isNum(h.eps_act)).sort((a,b)=>qk(a.rq)-qk(b.rq)).slice(-range);
+  const L=H.map(h=>h.rq), up=css("--up"), dn=css("--dn"), acc=css("--acc"), t=css("--mute"), g=css("--line");
+  mk("c1",{data:{labels:L,datasets:[
+    {type:"bar",label:"營收(B)",data:H.map(h=>h.revenue??h.rev_act),backgroundColor:H.map(h=>(h.rev_yoy??0)>=0?up+"aa":dn+"aa"),yAxisID:"y"},
+    {type:"line",label:"GAAP EPS",data:H.map(h=>h.eps_gaap),borderColor:acc,backgroundColor:acc,yAxisID:"y1",tension:.25,pointRadius:3},
+    {type:"line",label:"調整後EPS",data:H.map(h=>h.eps_act),borderColor:"#4e9cff",backgroundColor:"#4e9cff",yAxisID:"y1",borderDash:[5,4],pointRadius:4,spanGaps:false}
+  ]},options:baseOpt({y1:{position:"right",ticks:{color:t},grid:{display:false}}})});
+  mk("c2",{data:{labels:L,datasets:[
+    {type:"bar",label:"營收YoY%",data:H.map(h=>h.rev_yoy),backgroundColor:H.map(h=>(h.rev_yoy??0)>=0?up+"88":dn+"88"),yAxisID:"y1"},
+    {type:"line",label:"毛利率%",data:H.map(h=>h.gross_margin),borderColor:acc,backgroundColor:acc,tension:.25,yAxisID:"y"},
+    {type:"line",label:"淨利率%",data:H.map(h=>h.net_margin),borderColor:"#c678dd",backgroundColor:"#c678dd",tension:.25,yAxisID:"y"}
+  ]},options:baseOpt({y1:{position:"right",ticks:{color:t,callback:v=>v+"%"},grid:{display:false}}})});
+  const S=Object.values(c.history).filter(h=>isNum(h.eps_surprise_pct)||isNum(h.rev_surprise_pct)).sort((a,b)=>qk(a.rq)-qk(b.rq));
+  mk("c3",{type:"bar",data:{labels:S.map(h=>h.rq),datasets:[
+    {label:"EPS驚喜%",data:S.map(h=>h.eps_surprise_pct),backgroundColor:S.map(h=>(h.eps_surprise_pct??0)>=0?up:dn)},
+    {label:"營收驚喜%",data:S.map(h=>h.rev_surprise_pct),backgroundColor:S.map(h=>(h.rev_surprise_pct??0)>=0?up+"77":dn+"77")}
+  ]},options:baseOpt()});
+  $("#coTitle").innerHTML=`${c.ticker} ${c.name_zh||""} 歷史明細 <a class="note" href="${tvUrl(c.symbol)}" target="_blank" rel="noopener">TradingView ↗</a>`;
+  const R=[...H].reverse();
+  const cols=[["rq","財報季"],["fiscal_period","公司財年季"],["release_date","公布日"],["eps_est","EPS預測"],["eps_act","已發布EPS"],["eps_surprise_pct","EPS驚喜%"],["rev_est","預測營收"],["revenue","營收(B)"],["rev_surprise_pct","營收驚喜%"],["rev_yoy","營收YoY%"],["eps_gaap","GAAP EPS"],["eps_gaap_yoy","EPS YoY%"],["net_income","淨利(B)"],["gross_margin","毛利率%"],["net_margin","淨利率%"]];
+  const cell=(k,v)=>{if(v==null)return "<td>—</td>";if(typeof v==="string")return `<td class="${k==="rq"?"l":""}">${k==="rq"?"<b>"+v+"</b>":v}</td>`;const p=/pct|yoy/.test(k);return `<td class="${p||k==="net_margin"?cls(v):""}">${p?pct(v,1):k.includes("margin")?f(v,1)+"%":f(v)}</td>`};
+  $("#coTable").innerHTML=`<thead><tr>${cols.map(([k,l],i)=>`<th class="${i?"":"l"}">${l}</th>`).join("")}</tr></thead><tbody>${R.map(h=>`<tr>${cols.map(([k])=>cell(k,h[k])).join("")}</tr>`).join("")}</tbody>`;
+  csvRows=()=>[cols.map(c=>c[1]),...R.map(h=>cols.map(([k])=>h[k]??""))]; csvName=`earnings_${c.ticker}.csv`;
+}
+
+// ---------- 多公司比較 ----------
+function renderCmp(){
+  const m=$("#mSel").value, label=$("#mSel").selectedOptions[0].text;
+  const C=cos(); const qs=[...new Set(C.flatMap(c=>Object.entries(c.history).filter(([q,h])=>isNum(h[m])).map(([q])=>q)))].sort((a,b)=>qk(a)-qk(b)).slice(-range);
+  const vals=C.flatMap(c=>qs.map(q=>c.history[q]?.[m]).filter(isNum));
+  const signed=/pct|yoy|net_margin/.test(m);
+  const mx=Math.max(1,...vals.map(Math.abs)), lo=Math.min(...vals), hi=Math.max(...vals);
+  const up=css("--up"),dn=css("--dn"),acc=css("--acc");
+  const bg=v=>{if(!isNum(v))return "";if(signed){const a=Math.min(1,Math.sqrt(Math.abs(v)/Math.min(mx,100)));return `background:${v>=0?up:dn}${Math.round(a*150+20).toString(16).padStart(2,"0")}`}const a=(v-lo)/((hi-lo)||1);return `background:${acc}${Math.round(a*170+15).toString(16).padStart(2,"0")}`};
+  const fmt=v=>!isNum(v)?"":signed?f(v,1):m==="revenue"?f(v,1):m.includes("margin")?f(v,1):f(v,2);
+  $("#hmTitle").textContent=`${label} 熱力圖（公司 × 財報季）`;
+  $("#hm").innerHTML=`<thead><tr><th class="l">公司</th>${qs.map(q=>`<th style="text-align:center">${q}</th>`).join("")}</tr></thead><tbody>${C.map(c=>`<tr><td class="l nm">${c.ticker}<small>${c.name_zh||""}</small></td>${qs.map(q=>{const v=c.history[q]?.[m];return `<td style="${bg(v)}">${fmt(v)}</td>`}).join("")}</tr>`).join("")}</tbody>`;
+  mk("c4",{type:"line",data:{labels:qs,datasets:C.map((c,i)=>({label:c.ticker,data:qs.map(q=>c.history[q]?.[m]??null),borderColor:PAL[i%PAL.length],backgroundColor:PAL[i%PAL.length],tension:.25,pointRadius:2,spanGaps:true}))},options:baseOpt()});
+  csvRows=()=>[["公司",...qs],...C.map(c=>[c.ticker+" "+(c.name_zh||""),...qs.map(q=>c.history[q]?.[m]??"")])]; csvName=`compare_${m}.csv`;
+}
+
+// ---------- 即將公布 ----------
+function renderCal(){
+  const today=new Date().toISOString().slice(0,10);
+  const R=cos().map(c=>({c,n:c.next||{}})).filter(x=>x.n.release_date).sort((a,b)=>a.n.release_date.localeCompare(b.n.release_date));
+  const days=d=>Math.round((new Date(d)-new Date(today))/864e5);
+  $("#calTable").innerHTML=`<thead><tr><th class="l">公布日期</th><th>倒數</th><th class="l">商品</th><th class="l">代號</th><th>財報季</th><th>EPS預測</th><th>營收預測(B)</th><th>上季EPS驚喜%</th><th>市值</th></tr></thead><tbody>${R.map(({c,n})=>{const last=c.history[c.latest_rq]||{};const dd=days(n.release_date);return `<tr><td class="l"><b>${n.release_date}</b></td><td>${dd>=0?dd+" 天":"已過"}</td><td class="l nm">${c.name}<small>${c.name_zh||""}</small></td><td class="l"><a href="${tvUrl(c.symbol)}" target="_blank" rel="noopener"><b>${c.ticker}</b></a></td><td>${n.rq||"—"}</td><td>${f(n.eps_est)}</td><td>${f(n.rev_est)}</td><td class="${cls(last.eps_surprise_pct)}">${pct(last.eps_surprise_pct)}</td><td>${f(c.market_cap,0)} B</td></tr>`}).join("")}</tbody>`;
+  csvRows=()=>[["公布日期","代號","商品","財報季","EPS預測","營收預測(B)"],...R.map(({c,n})=>[n.release_date,c.ticker,c.name+" "+(c.name_zh||""),n.rq,n.eps_est,n.rev_est])]; csvName="upcoming.csv";
+}
+
+// ---------- 追蹤名單 ----------
+function renderList(){
+  const A=Object.values(DB.companies).sort((a,b)=>(b.active!==false)-(a.active!==false)||(b.market_cap||0)-(a.market_cap||0));
+  $("#listTable").innerHTML=`<thead><tr><th class="l">顯示</th><th class="l">代號</th><th class="l">商品</th><th class="l">TradingView 代碼</th><th class="l">標籤</th><th>市值(B)</th><th>最新財報季</th><th>收錄季數</th><th class="l">狀態</th></tr></thead><tbody>${A.map(c=>`<tr><td class="l"><label class="chk"><input type="checkbox" data-tk="${c.ticker}" ${hidden.has(c.ticker)?"":"checked"} ${c.active===false?"disabled":""}></label></td><td class="l"><b>${c.ticker}</b></td><td class="l">${c.name} <small class="note">${c.name_zh||""}</small></td><td class="l"><code>${c.symbol}</code></td><td class="l">${(c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("")}</td><td>${f(c.market_cap,0)}</td><td>${c.latest_rq||"—"}</td><td>${Object.keys(c.history).length}</td><td class="l">${c.active===false?'<span class="badge b-pd">已移除</span>':'<span class="badge b-up">追蹤中</span>'}</td></tr>`).join("")}</tbody>`;
+  $("#listTable").onchange=e=>{const tk=e.target.dataset.tk;if(!tk)return;e.target.checked?hidden.delete(tk):hidden.add(tk);LS.set("hidden",[...hidden])};
+  $("#addBtn").onclick=()=>{const v=$("#addSym").value.trim();if(!/^[A-Z]+:[A-Z.]+/i.test(v)){$("#addSym").focus();$("#addSym").style.borderColor=css("--up");return}
+    navigator.clipboard?.writeText(v).catch(()=>{});window.open(REPO+"/actions/workflows/update.yml","_blank");$("#addSym").value="";$("#addSym").placeholder="已複製，請貼到 Run workflow 的 add 欄位";};
+  csvRows=()=>[["代號","商品","中文","TradingView","標籤","市值(B)","狀態"],...A.map(c=>[c.ticker,c.name,c.name_zh,c.symbol,(c.tags||[]).join("/"),c.market_cap,c.active===false?"已移除":"追蹤中"])]; csvName="watchlist.csv";
+}
+
+// ---------- CSV / theme ----------
+let csvName="earnings.csv";
+$("#csvBtn").onclick=()=>{const rows=csvRows();if(!rows.length)return;const esc=v=>{v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const blob=new Blob(["﻿"+rows.map(r=>r.map(esc).join(",")).join("\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=csvName;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
+const setTheme=t=>{document.documentElement.dataset.theme=t;LS.set("theme",t);if(DB)render()};
+setTheme(LS.get("theme",matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"));
+$("#themeBtn").onclick=()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");
+</script>
+</body>
+</html>

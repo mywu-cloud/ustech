@@ -1,0 +1,125 @@
+{
+ "_說明": "追蹤名單。symbol 為 TradingView 代碼（交易所:代號）。新增/刪除公司：直接編輯此檔，或到 GitHub Actions 執行「Update earnings」並填 add / remove。",
+ "companies": [
+  {
+   "symbol": "NASDAQ:TSLA",
+   "name": "TESLA",
+   "name_zh": "特斯拉",
+   "tags": [
+    "巨頭",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:GOOG",
+   "name": "ALPHABET (GOOGLE)",
+   "name_zh": "谷歌",
+   "tags": [
+    "巨頭",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:INTC",
+   "name": "INTEL",
+   "name_zh": "英特爾",
+   "tags": [
+    "半導體"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:MSFT",
+   "name": "Microsoft",
+   "name_zh": "微軟",
+   "tags": [
+    "巨頭",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:META",
+   "name": "META",
+   "name_zh": "臉書",
+   "tags": [
+    "巨頭",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:QCOM",
+   "name": "QUALCOMM",
+   "name_zh": "高通",
+   "tags": [
+    "半導體"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:ARM",
+   "name": "ARM",
+   "name_zh": "安謀",
+   "tags": [
+    "半導體"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:AMZN",
+   "name": "AMAZON",
+   "name_zh": "亞馬遜",
+   "tags": [
+    "巨頭",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:AAPL",
+   "name": "APPLE",
+   "name_zh": "蘋果",
+   "tags": [
+    "巨頭"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:PLTR",
+   "name": "Palantir",
+   "name_zh": "帕蘭提爾",
+   "tags": [
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:AMD",
+   "name": "AMD",
+   "name_zh": "超微",
+   "tags": [
+    "半導體",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:NVDA",
+   "name": "NVIDIA",
+   "name_zh": "輝達",
+   "tags": [
+    "半導體",
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NYSE:ORCL",
+   "name": "Oracle",
+   "name_zh": "甲骨文",
+   "tags": [
+    "AI"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:MU",
+   "name": "Micron (DRAM)",
+   "name_zh": "美光",
+   "tags": [
+    "半導體",
+    "記憶體"
+   ]
+  }
+ ]
+}
