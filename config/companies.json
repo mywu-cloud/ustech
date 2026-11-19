@@ -120,6 +120,14 @@
         "半導體",
         "記憶體"
       ]
+    },
+    {
+      "symbol": "NASDAQ:ANT",
+      "name": "Anthropic",
+      "name_zh": "",
+      "tags": [
+        "AI"
+      ]
     }
   ]
 }
