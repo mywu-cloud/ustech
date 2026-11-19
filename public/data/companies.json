@@ -1,5 +1,5 @@
 {
- "_說明": "追蹤名單。symbol 為 TradingView 代碼（交易所:代號）。新增/刪除公司：直接編輯此檔，或到 GitHub Actions 執行「Update earnings」並填 add / remove。",
+ "_說明": "追蹤名單。symbol 為 TradingView 代碼（交易所:代號）。新增/刪除公司：網站「追蹤名單」分頁的管理表單（密碼保護），或到 GitHub Actions 執行「Update earnings」並填 add / remove，或直接編輯此檔。",
  "companies": [
   {
    "symbol": "NASDAQ:TSLA",
@@ -119,6 +119,14 @@
    "tags": [
     "半導體",
     "記憶體"
+   ]
+  },
+  {
+   "symbol": "NASDAQ:ANT",
+   "name": "Anthropic",
+   "name_zh": "",
+   "tags": [
+    "AI"
    ]
   }
  ]
