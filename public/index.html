@@ -59,6 +59,8 @@ code{background:var(--panel2);border:1px solid var(--line);padding:1px 6px;borde
 .hide{display:none!important}
 footer{border-top:1px solid var(--line);padding:16px 0 30px;color:var(--mute);font-size:12px}
 .chk{display:flex;gap:6px;align-items:center;cursor:pointer}
+input[type=password],.mt input{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}
+h3.mh{font-size:13px;margin:14px 0 6px;color:var(--mute)}.mt td{padding:4px 6px}.mt input{width:100%;min-width:90px}.mt td:first-child input{min-width:140px}.mok{color:var(--up)}.merr{color:var(--dn)}.btn.sm{padding:2px 9px;font-size:12px}
 @media(max-width:600px){h1{font-size:16px}.kpi .v{font-size:18px}th,td{padding:7px 8px}.top .sub{width:100%}}
 </style>
 </head>
@@ -130,23 +132,24 @@ footer{border-top:1px solid var(--line);padding:16px 0 30px;color:var(--mute);fo
 
  <!-- 追蹤名單 -->
  <section id="t-list" class="hide">
-  <div class="panel">
-   <h2>追蹤名單 <span class="note">（勾選＝在本瀏覽器顯示；取消勾選只會在你的畫面隱藏）</span></h2>
-   <div class="tw"><table id="listTable"></table></div>
-  </div>
-  <div class="panel">
-   <h2>新增 / 刪除追蹤公司（永久）</h2>
-   <div class="note">
-    方式一：GitHub → <a id="actLink" target="_blank" rel="noopener">Actions → Update earnings</a> → <b>Run workflow</b>，填入：<br>
-    • <b>add</b>：<code>交易所:代號|英文名|中文名</code>，多筆以 <code>;</code> 分隔，例 <code>NASDAQ:AVGO|Broadcom|博通;NYSE:TSM|TSMC ADR|台積電ADR</code><br>
-    • <b>remove</b>：代號，多筆以 <code>,</code> 分隔，例 <code>INTC,QCOM</code><br>
-    方式二：直接編輯 <a id="cfgLink" target="_blank" rel="noopener"><code>config/companies.json</code></a> 並 commit，下一次排程會自動抓取。<br>
-    刪除的公司歷史資料會保留（標記為停用），日後重新加入可延續趨勢。代號需為 TradingView 格式，可在 TradingView 個股頁網址看到（例 <code>NASDAQ-AVGO</code> → <code>NASDAQ:AVGO</code>）。
-   </div>
-   <div class="row" style="margin-top:12px">
-    <input type="text" id="addSym" placeholder="NASDAQ:AVGO|Broadcom|博通" style="min-width:280px">
-    <button class="btn pri" id="addBtn">產生新增連結</button>
-   </div>
+  <div class="panel"><h2>追蹤名單 <span class="note">（取消勾選＝只在你的瀏覽器隱藏；要永久刪除請按「移除」）</span></h2>
+   <div class="row" style="margin-bottom:10px"><b>快速新增</b><input type="text" id="qaSym" placeholder="輸入代號，例 AVGO 或 NYSE:TSM" style="min-width:220px" autocomplete="off">
+    <input type="text" id="qaZh" placeholder="中文名（選填）" style="width:130px"><input type="text" id="qaTag" list="mTags" placeholder="標籤（選填，, 分隔）" style="width:160px"><button class="btn pri" id="qaGo">＋ 加入</button><span class="note" id="qaMsg"></span>
+    <span class="sp"></span><button class="btn" id="hidDel" title="把目前取消勾選（隱藏）的公司排入永久刪除">取消勾選的 → 排入刪除</button></div>
+   <div class="tw"><table id="listTable"></table></div></div>
+  <div class="panel" id="mgr"><h2>新增 / 刪除公司（永久）</h2>
+   <div class="row"><label>管理密碼 <input type="password" id="mPw" autocomplete="current-password" style="width:200px"></label>
+    <label class="note"><input type="checkbox" id="mKeep"> 此分頁記住（關閉分頁即清除）</label></div>
+   <h3 class="mh">新增 / 更新</h3>
+   <div class="tw"><table class="mt"><thead><tr><th class="l">TradingView 代碼*</th><th class="l">英文名</th><th class="l">中文名</th><th class="l">標籤（, 分隔）</th><th></th></tr></thead><tbody id="mAdd"></tbody></table></div>
+   <datalist id="mTags"></datalist>
+   <div class="row" style="margin-top:8px"><button class="btn" id="mMore">＋ 再加一列</button><span class="note">代號已存在 → 只更新有填的欄位。只填 <code>AVGO</code> 會自動查交易所；英文名留空會自動帶出。例：NASDAQ:AVGO｜Broadcom｜博通｜半導體,AI</span></div>
+   <h3 class="mh">刪除</h3>
+   <div class="row"><input type="text" id="mDel" placeholder="代號，以逗號分隔，例 INTC,QCOM" style="min-width:280px"><span class="note">也可在上方名單按「移除」加入</span></div>
+   <div class="row" style="margin-top:12px"><button class="btn pri" id="mGo">送出</button><button class="btn" id="mRuns">查看執行狀態</button><span class="note" id="mPrev"></span></div>
+   <div id="mMsg" class="note" style="margin-top:8px"></div>
+   <p class="note" style="margin-top:12px">送出後由 GitHub Actions 更新名單並抓取 TradingView 資料，約 3–10 分鐘後重新整理即可看到。刪除的公司歷史資料會保留（標記為已移除），日後「重新加入」可延續趨勢。
+    備用方式：GitHub → <a id="actLink" target="_blank" rel="noopener">Actions → Update earnings</a> → Run workflow，或直接編輯 <a id="cfgLink" target="_blank" rel="noopener"><code>config/companies.json</code></a>。</p>
   </div>
  </section>
 </main>
@@ -182,7 +185,7 @@ fetch("data/earnings.json?"+Date.now()).then(r=>r.json()).then(d=>{DB=d;init()})
 function init(){
   const t=new Date(DB.updated_at);
   $("#upd").textContent=`更新：${t.toLocaleString("zh-TW",{hour12:false})}（台灣時間）· 追蹤 ${cos(true).filter(c=>c.active!==false).length} 家`;
-  $("#actLink").href=REPO+"/actions/workflows/update.yml";$("#cfgLink").href=REPO+"/blob/main/config/companies.json";
+  mInit();
   const qs=allQuarters(); curQ=LS.get("q",null);
   if(!qs.includes(curQ)) curQ=latestQ();
   // range pills
@@ -304,11 +307,79 @@ function renderCal(){
 // ---------- 追蹤名單 ----------
 function renderList(){
   const A=Object.values(DB.companies).sort((a,b)=>(b.active!==false)-(a.active!==false)||(b.market_cap||0)-(a.market_cap||0));
-  $("#listTable").innerHTML=`<thead><tr><th class="l">顯示</th><th class="l">代號</th><th class="l">商品</th><th class="l">TradingView 代碼</th><th class="l">標籤</th><th>市值(B)</th><th>最新財報季</th><th>收錄季數</th><th class="l">狀態</th></tr></thead><tbody>${A.map(c=>`<tr><td class="l"><label class="chk"><input type="checkbox" data-tk="${c.ticker}" ${hidden.has(c.ticker)?"":"checked"} ${c.active===false?"disabled":""}></label></td><td class="l"><b>${c.ticker}</b></td><td class="l">${c.name} <small class="note">${c.name_zh||""}</small></td><td class="l"><code>${c.symbol}</code></td><td class="l">${(c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("")}</td><td>${f(c.market_cap,0)}</td><td>${c.latest_rq||"—"}</td><td>${Object.keys(c.history).length}</td><td class="l">${c.active===false?'<span class="badge b-pd">已移除</span>':'<span class="badge b-up">追蹤中</span>'}</td></tr>`).join("")}</tbody>`;
+  $("#listTable").innerHTML=`<thead><tr><th class="l">顯示</th><th class="l">永久</th><th class="l">代號</th><th class="l">商品</th><th class="l">TradingView 代碼</th><th class="l">標籤</th><th>市值(B)</th><th>最新財報季</th><th>收錄季數</th><th class="l">狀態</th></tr></thead><tbody>${A.map(c=>`<tr><td class="l"><label class="chk"><input type="checkbox" data-tk="${c.ticker}" ${hidden.has(c.ticker)?"":"checked"} ${c.active===false?"disabled":""}></label></td><td class="l">${c.active===false?`<button class="btn sm" data-re="${c.ticker}">重新加入</button>`:`<button class="btn sm" data-rm="${c.ticker}">移除</button>`}</td><td class="l"><b>${c.ticker}</b></td><td class="l">${c.name} <small class="note">${c.name_zh||""}</small></td><td class="l"><code>${c.symbol}</code></td><td class="l">${(c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join("")}</td><td>${f(c.market_cap,0)}</td><td>${c.latest_rq||"—"}</td><td>${Object.keys(c.history).length}</td><td class="l">${c.active===false?'<span class="badge b-dn">已移除</span>':'<span class="badge b-up">追蹤中</span>'}</td></tr>`).join("")}</tbody>`;
+  $("#listTable").onclick=e=>{const rm=e.target.dataset.rm,re=e.target.dataset.re;if(rm)mQueueDel(rm);if(re){const c=DB.companies[re];mAddRow({sym:c.symbol,name:c.name||"",zh:c.name_zh||"",tags:(c.tags||[]).join(",")})}};
   $("#listTable").onchange=e=>{const tk=e.target.dataset.tk;if(!tk)return;e.target.checked?hidden.delete(tk):hidden.add(tk);LS.set("hidden",[...hidden])};
-  $("#addBtn").onclick=()=>{const v=$("#addSym").value.trim();if(!/^[A-Z]+:[A-Z.]+/i.test(v)){$("#addSym").focus();$("#addSym").style.borderColor=css("--up");return}
-    navigator.clipboard?.writeText(v).catch(()=>{});window.open(REPO+"/actions/workflows/update.yml","_blank");$("#addSym").value="";$("#addSym").placeholder="已複製，請貼到 Run workflow 的 add 欄位";};
   csvRows=()=>[["代號","商品","中文","TradingView","標籤","市值(B)","狀態"],...A.map(c=>[c.ticker,c.name,c.name_zh,c.symbol,(c.tags||[]).join("/"),c.market_cap,c.active===false?"已移除":"追蹤中"])]; csvName="watchlist.csv";
+}
+
+// ---------- 管理表單：經 /api/manage（Cloudflare Pages Function）觸發 GitHub Actions ----------
+const SS={get:k=>{try{return sessionStorage.getItem("ustech_"+k)}catch(e){return null}},set:(k,v)=>{try{v==null?sessionStorage.removeItem("ustech_"+k):sessionStorage.setItem("ustech_"+k,v)}catch(e){}}};
+const SYM=/^([A-Z]{2,10}:)?[A-Z][A-Z0-9.]{0,9}$/;
+const normSym=v=>v.normalize("NFKC").trim().toUpperCase().replace("-",":");
+const tkOf=v=>normSym(v).split(":").pop();
+const findCo=tk=>DB.companies[tk];
+const LK={};
+async function lookup(q){q=normSym(q);if(LK[q])return LK[q];
+  try{const r=await fetch("/api/lookup?q="+encodeURIComponent(q));const d=await r.json();if(d.ok)return LK[q]=d.hits[0];}catch(e){}
+  return null}
+function mAddRow(v={}){const tr=document.createElement("tr");
+  tr.innerHTML=`<td><input data-k="sym" placeholder="NASDAQ:AVGO"></td><td><input data-k="name" placeholder="Broadcom"></td><td><input data-k="zh" placeholder="博通"></td><td><input data-k="tags" list="mTags" placeholder="半導體,AI"></td><td><button class="btn" data-x>✕</button></td>`;
+  for(const [k,x] of Object.entries(v))if(tr.querySelector(`[data-k=${k}]`))tr.querySelector(`[data-k=${k}]`).value=x;
+  $("#mAdd").appendChild(tr);mPrev();if(v.sym)tr.scrollIntoView({block:"nearest"});return tr}
+function mQueueDel(tk){const s=new Set($("#mDel").value.split(/[,，\s]+/).filter(Boolean));s.add(tk);$("#mDel").value=[...s].join(",");mPrev();$("#mDel").scrollIntoView({block:"center"})}
+function mSpec(){const add=[...$$("#mAdd tr")].map(tr=>{const g=k=>tr.querySelector(`[data-k=${k}]`).value.normalize("NFKC").replace(/[|;#]/g," ").trim();
+    const p=[normSym(g("sym")),g("name"),g("zh"),g("tags").replace(/[、/]/g,",").replace(/\s*,\s*/g,",")];while(p.length>1&&!p[p.length-1])p.pop();return p[0]?p.join("|"):""}).filter(Boolean).join(";");
+  const remove=$("#mDel").value.normalize("NFKC").toUpperCase().split(/[,\s]+/).filter(Boolean).join(",");return{add,remove}}
+function mPrev(){const {add,remove}=mSpec();$("#mPrev").textContent=(add?`add：${add}　`:"")+(remove?`remove：${remove}`:"")}
+function mMsg(t,ok){const m=$("#mMsg");m.className="note "+(ok===true?"mok":ok===false?"merr":"");m.textContent=t}
+function qaMsg(t,ok){const m=$("#qaMsg");m.className="note "+(ok===false?"merr":ok===true?"mok":"");m.textContent=t}
+function mInit(){
+  $("#actLink").href=REPO+"/actions/workflows/update.yml";$("#cfgLink").href=REPO+"/blob/main/config/companies.json";
+  $("#mTags").innerHTML=[...new Set(Object.values(DB.companies).flatMap(c=>c.tags||[]))].map(t=>`<option value="${t}">`).join("");
+  $("#qaGo").onclick=async()=>{const raw=$("#qaSym").value;const sym=normSym(raw);if(!SYM.test(sym))return qaMsg("請輸入美股代號，例 AVGO 或 NYSE:TSM",false);
+    const tk=tkOf(sym),c=findCo(tk);if(c&&c.active!==false)return qaMsg(`${tk} ${c.name} 已在追蹤名單`,false);
+    if([...$$("#mAdd [data-k=sym]")].some(i=>i.value.trim()&&tkOf(i.value)===tk))return qaMsg(`${tk} 已在下方待新增`,false);
+    let full=c?.symbol||(sym.includes(":")?sym:""),name=c?.name||"";
+    if(!full||!name){qaMsg("向 TradingView 查詢中…");const h=await lookup(sym);
+      if(h){full=full||h.symbol;name=name||h.name}
+      else if(!full)return qaMsg(`查不到 ${tk} 的交易所，請改輸入「交易所:代號」，例 NASDAQ:${tk}`,false)}
+    const blank=[...$$("#mAdd tr")].find(tr=>![...tr.querySelectorAll("input")].some(i=>i.value.trim()));if(blank)blank.remove();
+    mAddRow({sym:full,name,zh:$("#qaZh").value.trim()||c?.name_zh||"",tags:$("#qaTag").value.trim()||(c?.tags||[]).join(",")});
+    $("#qaSym").value="";$("#qaZh").value="";$("#qaTag").value="";
+    qaMsg(`已加入 ${full} ${name||"（名稱將自動補上）"}，請在下方輸入密碼後按「送出」`,true)};
+  for(const id of ["#qaSym","#qaZh","#qaTag"])$(id).onkeydown=e=>{if(e.key==="Enter")$("#qaGo").click()};
+  $("#hidDel").onclick=()=>{const L=[...hidden].filter(k=>DB.companies[k]&&DB.companies[k].active!==false);
+    if(!L.length)return qaMsg("目前沒有取消勾選的公司",false);L.forEach(mQueueDel);qaMsg(`已排入刪除：${L.join(",")}，請在下方輸入密碼後按「送出」`,true)};
+  $("#mAdd").addEventListener("change",async e=>{if(e.target.dataset.k!=="sym")return;const tr=e.target.closest("tr"),v=normSym(e.target.value),n=tr.querySelector("[data-k=name]"),z=tr.querySelector("[data-k=zh]");
+    if(!v)return;e.target.value=v;const c=findCo(tkOf(v));
+    if(c){if(!v.includes(":"))e.target.value=c.symbol;if(!n.value.trim())n.value=c.name||"";if(!z.value.trim())z.value=c.name_zh||""}
+    else if(!v.includes(":")||!n.value.trim()){const h=await lookup(v);if(h){if(!v.includes(":"))e.target.value=h.symbol;if(!n.value.trim())n.value=h.name}}
+    mPrev()});
+  const saved=SS.get("pw");if(saved){$("#mPw").value=saved;$("#mKeep").checked=true}
+  $("#mKeep").onchange=()=>SS.set("pw",$("#mKeep").checked?$("#mPw").value:null);
+  $("#mPw").oninput=()=>{if($("#mKeep").checked)SS.set("pw",$("#mPw").value)};
+  mAddRow();
+  $("#mMore").onclick=()=>mAddRow();
+  $("#mAdd").oninput=mPrev;$("#mDel").oninput=mPrev;
+  $("#mAdd").onclick=e=>{if(e.target.dataset.x!==undefined){e.target.closest("tr").remove();if(!$("#mAdd").children.length)mAddRow();mPrev()}};
+  $("#mGo").onclick=async()=>{const {add,remove}=mSpec(),pw=$("#mPw").value;
+    if(!pw)return mMsg("請輸入管理密碼",false);if(!add&&!remove)return mMsg("請填寫要新增或刪除的公司",false);
+    const bad=add.split(";").map(s=>s.split("|")[0]).find(x=>!SYM.test(x));if(bad)return mMsg(`代號格式錯誤：${bad}（例 NASDAQ:AVGO）`,false);
+    const miss=remove.split(",").filter(x=>x&&!DB.companies[x]);
+    if(!confirm(`確定送出？\n${add?"新增/更新："+add+"\n":""}${remove?"刪除："+remove:""}${miss.length?"\n（目前名單找不到："+miss.join(",")+"）":""}`))return;
+    $("#mGo").disabled=true;mMsg("送出中…");
+    try{const r=await fetch("/api/manage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({password:pw,add,remove})});
+      const d=await r.json().catch(()=>({error:"HTTP "+r.status}));
+      if(d.ok){mMsg("✅ 已觸發更新，約 3–10 分鐘後重新整理頁面即可看到。可按「查看執行狀態」追蹤。",true);$("#mAdd").innerHTML="";mAddRow();$("#mDel").value="";mPrev()}
+      else mMsg("❌ "+(d.error||"失敗")+(d.detail?"："+d.detail:"")+(r.status===401?`（你輸入了 ${pw.trim().length} 個字元）`:""),false)}
+    catch(e){mMsg("❌ 連線失敗："+e,false)}finally{$("#mGo").disabled=false}};
+  $("#mRuns").onclick=async()=>{const pw=$("#mPw").value;if(!pw)return mMsg("請輸入管理密碼",false);mMsg("查詢中…");
+    try{const r=await fetch("/api/manage",{headers:{"x-admin-password":pw}});const d=await r.json();
+      if(!d.ok)return mMsg("❌ "+d.error+(r.status===401?`（你輸入了 ${pw.trim().length} 個字元）`:""),false);
+      const lab=x=>x.status!=="completed"?"⏳ 執行中":x.conclusion==="success"?"✅ 完成":"❌ "+x.conclusion;
+      $("#mMsg").className="note";$("#mMsg").innerHTML=d.runs.length?d.runs.map(x=>`${new Date(x.created_at).toLocaleString("zh-TW",{hour12:false})}　${lab(x)}　<a href="${x.url}" target="_blank" rel="noopener">詳細</a>`).join("<br>"):"尚無手動執行紀錄"}
+    catch(e){mMsg("❌ 連線失敗："+e,false)}};
 }
 
 // ---------- CSV / theme ----------

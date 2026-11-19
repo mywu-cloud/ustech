@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       add:
-        description: "新增公司：交易所:代號|英文名|中文名（多筆用 ; 分隔），例 NASDAQ:AVGO|Broadcom|博通"
+        description: "新增/更新：交易所:代號|英文名|中文名|標籤1,標籤2（多筆用 ; 分隔；已存在則更新有填欄位）例 NASDAQ:AVGO|Broadcom|博通|半導體,AI"
         required: false
         default: ""
       remove:
