@@ -148,8 +148,7 @@ h3.mh{font-size:13px;margin:14px 0 6px;color:var(--mute)}.mt td{padding:4px 6px}
    <div class="row"><input type="text" id="mDel" placeholder="代號，以逗號分隔，例 INTC,QCOM" style="min-width:280px"><span class="note">也可在上方名單按「移除」加入</span></div>
    <div class="row" style="margin-top:12px"><button class="btn pri" id="mGo">送出</button><button class="btn" id="mRuns">查看執行狀態</button><span class="note" id="mPrev"></span></div>
    <div id="mMsg" class="note" style="margin-top:8px"></div>
-   <p class="note" style="margin-top:12px">送出後由 GitHub Actions 更新名單並抓取 TradingView 資料，約 3–10 分鐘後重新整理即可看到。刪除的公司歷史資料會保留（標記為已移除），日後「重新加入」可延續趨勢。
-    備用方式：GitHub → <a id="actLink" target="_blank" rel="noopener">Actions → Update earnings</a> → Run workflow，或直接編輯 <a id="cfgLink" target="_blank" rel="noopener"><code>config/companies.json</code></a>。</p>
+   <p class="note" style="margin-top:12px">送出後由 GitHub Actions 更新名單並抓取 TradingView 資料，約 3–10 分鐘後重新整理即可看到。刪除的公司歷史資料會保留（標記為已移除），日後「重新加入」可延續趨勢。</p>
   </div>
  </section>
 </main>
@@ -335,7 +334,6 @@ function mPrev(){const {add,remove}=mSpec();$("#mPrev").textContent=(add?`add：
 function mMsg(t,ok){const m=$("#mMsg");m.className="note "+(ok===true?"mok":ok===false?"merr":"");m.textContent=t}
 function qaMsg(t,ok){const m=$("#qaMsg");m.className="note "+(ok===false?"merr":ok===true?"mok":"");m.textContent=t}
 function mInit(){
-  $("#actLink").href=REPO+"/actions/workflows/update.yml";$("#cfgLink").href=REPO+"/blob/main/config/companies.json";
   $("#mTags").innerHTML=[...new Set(Object.values(DB.companies).flatMap(c=>c.tags||[]))].map(t=>`<option value="${t}">`).join("");
   $("#qaGo").onclick=async()=>{const raw=$("#qaSym").value;const sym=normSym(raw);if(!SYM.test(sym))return qaMsg("請輸入美股代號，例 AVGO 或 NYSE:TSM",false);
     const tk=tkOf(sym),c=findCo(tk);if(c&&c.active!==false)return qaMsg(`${tk} ${c.name} 已在追蹤名單`,false);

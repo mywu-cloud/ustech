@@ -21,7 +21,7 @@
 ## 新增 / 刪除公司
 
 ### 網站操作（建議）
-在網站「**追蹤名單**」分頁：
+在網站「**追蹤名單**」分頁（操作方式與 [TW-AI](https://stock.pinncafe.com/#twai) 相同；也可從 <https://stock.pinncafe.com/#ustech> 進入）：
 
 | 動作 | 操作 |
 |---|---|
