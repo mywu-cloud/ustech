@@ -29,6 +29,8 @@ async function same(a, b) {
 
 // token 去除前後空白 / 換行 / 引號 / 誤貼的 "Bearer " 前綴
 const ghToken = env => String(env.GH_TOKEN || env.USTECH_TOKEN || "").trim().replace(/^bearer\s+/i, "").replace(/^["'“”]+|["'“”]+$/g, "").trim();
+// 401 診斷：只回報 token 長度與前 4 碼（不洩漏 token）。正常 fine-grained token 為 github_pat_ 開頭、約 93 字元
+const tokenHint = env => { const t = ghToken(env); const k = env.GH_TOKEN ? "GH_TOKEN" : "USTECH_TOKEN"; return `（${k}：長度 ${t.length}、開頭 ${t.slice(0, 4)}…；正常應為 github_pat_ 開頭、約 93 字元）`; };
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
     status,
@@ -96,7 +98,7 @@ export async function onRequestPost({ request, env }) {
   });
   if (r.status !== 204) {
     const t = await r.text();
-    return json({ ok: false, error: `GitHub 回應 ${r.status}`, detail: t.slice(0, 300) }, 502);
+    return json({ ok: false, error: `GitHub 回應 ${r.status}` + (r.status === 401 ? tokenHint(env) : ""), detail: t.slice(0, 300) }, 502);
   }
   return json({ ok: true, add: v.add, remove: v.remove });
 }
@@ -106,7 +108,7 @@ export async function onRequestGet({ request, env }) {
   if (deny) return deny;
   const { wf } = cfg(env);
   const r = await gh(env, `/actions/workflows/${wf}/runs?event=workflow_dispatch&per_page=5`);
-  if (!r.ok) return json({ ok: false, error: `GitHub 回應 ${r.status}` }, 502);
+  if (!r.ok) return json({ ok: false, error: `GitHub 回應 ${r.status}` + (r.status === 401 ? tokenHint(env) : "") }, 502);
   const d = await r.json();
   return json({
     ok: true,
