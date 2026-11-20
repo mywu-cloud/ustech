@@ -27,6 +27,8 @@ async function same(a, b) {
   return d === 0;
 }
 
+// token 去除前後空白 / 換行 / 引號 / 誤貼的 "Bearer " 前綴
+const ghToken = env => String(env.GH_TOKEN || env.USTECH_TOKEN || "").trim().replace(/^bearer\s+/i, "").replace(/^["'“”]+|["'“”]+$/g, "").trim();
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), {
     status,
@@ -45,7 +47,7 @@ const gh = (env, path, init = {}) =>
   fetch(`https://api.github.com/repos/${cfg(env).repo}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${env.GH_TOKEN || env.USTECH_TOKEN}`,
+      authorization: `Bearer ${ghToken(env)}`,
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
       "user-agent": "ustech-pages",
