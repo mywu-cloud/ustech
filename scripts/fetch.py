@@ -156,14 +156,15 @@ def merge(db, cfg, rows, now_iso):
 
         # 1) seed（只補空缺，不覆蓋）
         for s in seeds.get(tk, []):
-            rq = rq_from_date(s["release_date"])
+            rq = (s.get("rq") or "").strip() or rq_from_date(s["release_date"])
             rec = hist.setdefault(rq, {"rq": rq})
             for k_out, k_in, mul in (("eps_est", "eps_est", 1), ("eps_act", "eps_act", 1),
                                      ("rev_est", "rev_est_b", 1), ("rev_act", "rev_act_b", 1),
                                      ("market_cap", "market_cap_b", 1)):
                 if rec.get(k_out) is None and s.get(k_in):
                     rec[k_out] = r(float(s[k_in]) * mul)
-            rec.setdefault("release_date", s["release_date"])
+            if s.get("release_date"):
+                rec.setdefault("release_date", s["release_date"])
             rec.setdefault("source", "seed")
 
         if not row:
