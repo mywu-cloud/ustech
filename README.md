@@ -56,7 +56,7 @@ GitHub token 只存在 Cloudflare Secret，不會出現在前端；沒有密碼�
    - Repository access：**Only select repositories** → `mywu-cloud/ustech`
    - Repository permissions：**Actions: Read and write**（其他不用開）
 2. **Cloudflare Pages** → ustech → 設定 → 變數與機密（**Production**），類型 **Secret**：
-   - `GH_TOKEN`：上一步的 token（`github_pat_` 開頭）
+   - `GH_TOKEN`（或 `USTECH_TOKEN`）：上一步的 token（`github_pat_` 開頭）
    - `ADMIN_PASSWORD`：管理密碼（建議 16 字以上；區分大小寫）
    - 選填：`GH_REPO`（預設 `mywu-cloud/ustech`）、`GH_WORKFLOW`（預設 `update.yml`）、`GH_REF`（預設 `main`）
 3. **重新部署**：部署 → 最新一筆「⋯」→ **重試部署**。⚠️ 變數只套用到之後的部署，**每次修改變數都要重新部署**（或推一個 commit）。

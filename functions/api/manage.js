@@ -2,7 +2,7 @@
 // 由網站「追蹤名單」頁的管理表單呼叫，代為觸發 GitHub Actions「Update earnings」(workflow_dispatch)。
 //
 // 需在 Cloudflare Pages → Settings → Variables and Secrets 設定（類型選 Secret）：
-//   GH_TOKEN        Fine-grained token，只授權 mywu-cloud/ustech，權限 Actions: Read and write
+//   GH_TOKEN（或 USTECH_TOKEN） Fine-grained token，只授權 mywu-cloud/ustech，權限 Actions: Read and write
 //   ADMIN_PASSWORD  管理密碼（建議 16 字以上）
 // 選填：GH_REPO（預設 mywu-cloud/ustech）、GH_WORKFLOW（預設 update.yml）、GH_REF（預設 main）
 //
@@ -45,7 +45,7 @@ const gh = (env, path, init = {}) =>
   fetch(`https://api.github.com/repos/${cfg(env).repo}${path}`, {
     ...init,
     headers: {
-      authorization: `Bearer ${env.GH_TOKEN}`,
+      authorization: `Bearer ${env.GH_TOKEN || env.USTECH_TOKEN}`,
       accept: "application/vnd.github+json",
       "x-github-api-version": "2022-11-28",
       "user-agent": "ustech-pages",
@@ -54,7 +54,7 @@ const gh = (env, path, init = {}) =>
   });
 
 async function auth(env, pw) {
-  if (!env.GH_TOKEN || !env.ADMIN_PASSWORD) return json({ ok: false, error: "伺服器尚未設定 GH_TOKEN / ADMIN_PASSWORD" }, 500);
+  if (!(env.GH_TOKEN || env.USTECH_TOKEN) || !env.ADMIN_PASSWORD) return json({ ok: false, error: "伺服器尚未設定 GH_TOKEN / ADMIN_PASSWORD" }, 500);
   if (!norm(pw) || !(await same(norm(pw), norm(env.ADMIN_PASSWORD)))) {
     await new Promise(r => setTimeout(r, 800)); // 減緩暴力猜測
     return json({ ok: false, error: "密碼錯誤" }, 401);
